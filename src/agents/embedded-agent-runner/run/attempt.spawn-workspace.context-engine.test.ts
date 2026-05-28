@@ -361,9 +361,7 @@ describe("runEmbeddedAttempt context engine sessionKey forwarding", () => {
       },
     );
     expect(seen.systemPrompt).not.toContain("secret runtime context");
-    expect(JSON.stringify(seen.messages)).not.toContain(
-      "visible ask",
-    );
+    expect(JSON.stringify(seen.messages)).not.toContain("visible ask");
     const trajectoryEvents = (
       await fs.readFile(path.join(tempPaths[0] ?? "", "session.trajectory.jsonl"), "utf8")
     )
@@ -1072,7 +1070,7 @@ describe("runEmbeddedAttempt context engine sessionKey forwarding", () => {
     expect(result.finalPromptText).toBe("visible ask");
     const runtimeContext = findRecord(
       requireRecords(seen.messages, "seen messages"),
-        (message) => message.customType === "openclaw.runtime-context",
+      (message) => message.customType === "openclaw.runtime-context",
       "runtime context message",
     );
     expect(seen.systemPrompt).not.toContain("[Inter-session message]");

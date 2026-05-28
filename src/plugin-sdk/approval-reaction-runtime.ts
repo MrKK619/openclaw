@@ -3,8 +3,8 @@
  * New plugin code should use the focused approval runtime/reply subpaths.
  */
 import { sanitizeForPromptLiteral } from "../agents/sanitize-for-prompt.js";
-import { matchesApprovalRequestFilters } from "../infra/approval-request-filters.js";
 import { formatApprovalDisplayPath } from "../infra/approval-display-paths.js";
+import { matchesApprovalRequestFilters } from "../infra/approval-request-filters.js";
 import { buildPendingApprovalView } from "../infra/approval-view-model.js";
 import type { ApprovalRequest, PendingApprovalView } from "../infra/approval-view-model.types.js";
 import {

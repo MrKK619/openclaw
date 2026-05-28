@@ -275,10 +275,7 @@ function isPackageFilesExcludedDistPath(
   );
 }
 
-function isPackagedDistPath(
-  relativePath: string,
-  rules: PackageDistInventoryRules,
-): boolean {
+function isPackagedDistPath(relativePath: string, rules: PackageDistInventoryRules): boolean {
   if (!relativePath.startsWith("dist/")) {
     return false;
   }
@@ -319,10 +316,7 @@ function isPackagedDistPath(
   return true;
 }
 
-function isOmittedDistSubtree(
-  relativePath: string,
-  rules: PackageDistInventoryRules,
-): boolean {
+function isOmittedDistSubtree(relativePath: string, rules: PackageDistInventoryRules): boolean {
   return (
     isExternalizedBundledExtensionDistPath(relativePath, rules.externalizedExtensionIds) ||
     isLegacyPluginDependencyDirPath(relativePath) ||
