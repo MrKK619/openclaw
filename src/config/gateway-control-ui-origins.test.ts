@@ -86,4 +86,56 @@ describe("ensureControlUiAllowedOriginsForNonLoopbackBind", () => {
       "https://control.example.com",
     ]);
   });
+
+  it("does not seed origins when custom allowed origins are configured via env", () => {
+    const prevAllowed = process.env.OPENCLAW_ALLOWED_ORIGINS;
+    try {
+      process.env.OPENCLAW_ALLOWED_ORIGINS = "https://custom-env.example.com";
+      const result = ensureControlUiAllowedOriginsForNonLoopbackBind(
+        { gateway: {} },
+        {
+          runtimeBind: "lan",
+          runtimePort: 3000,
+          isContainerEnvironment: () => false,
+        },
+      );
+
+      expect(result.bind).toBe("lan");
+      expect(result.seededOrigins).toBeNull();
+      expect(result.config.gateway?.controlUi?.allowedOrigins).toEqual([
+        "https://custom-env.example.com",
+      ]);
+    } finally {
+      if (prevAllowed === undefined) {
+        delete process.env.OPENCLAW_ALLOWED_ORIGINS;
+      } else {
+        process.env.OPENCLAW_ALLOWED_ORIGINS = prevAllowed;
+      }
+    }
+  });
+
+  it("does not seed origins when dangerous fallback is enabled via env", () => {
+    const prevFallback = process.env.OPENCLAW_DANGEROUS_ALLOW_HOST_HEADER_ORIGIN_FALLBACK;
+    try {
+      process.env.OPENCLAW_DANGEROUS_ALLOW_HOST_HEADER_ORIGIN_FALLBACK = "true";
+      const result = ensureControlUiAllowedOriginsForNonLoopbackBind(
+        { gateway: {} },
+        {
+          runtimeBind: "lan",
+          runtimePort: 3000,
+          isContainerEnvironment: () => false,
+        },
+      );
+
+      expect(result.bind).toBe("lan");
+      expect(result.seededOrigins).toBeNull();
+      expect(result.config.gateway?.controlUi?.dangerouslyAllowHostHeaderOriginFallback).toBe(true);
+    } finally {
+      if (prevFallback === undefined) {
+        delete process.env.OPENCLAW_DANGEROUS_ALLOW_HOST_HEADER_ORIGIN_FALLBACK;
+      } else {
+        process.env.OPENCLAW_DANGEROUS_ALLOW_HOST_HEADER_ORIGIN_FALLBACK = prevFallback;
+      }
+    }
+  });
 });

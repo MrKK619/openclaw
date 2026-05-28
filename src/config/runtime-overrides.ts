@@ -84,8 +84,34 @@ export function unsetConfigOverride(pathRaw: string): {
 }
 
 export function applyConfigOverrides(cfg: OpenClawConfig): OpenClawConfig {
-  if (!overrides || Object.keys(overrides).length === 0) {
-    return cfg;
+  let nextCfg = cfg;
+
+  const envAllowedOrigins = process.env.OPENCLAW_ALLOWED_ORIGINS
+    ? process.env.OPENCLAW_ALLOWED_ORIGINS.split(",")
+        .map((value) => value.trim())
+        .filter(Boolean)
+    : undefined;
+
+  const envFallback = process.env.OPENCLAW_DANGEROUS_ALLOW_HOST_HEADER_ORIGIN_FALLBACK;
+
+  if (envAllowedOrigins !== undefined || envFallback !== undefined) {
+    nextCfg = {
+      ...nextCfg,
+      gateway: {
+        ...nextCfg.gateway,
+        controlUi: {
+          ...nextCfg.gateway?.controlUi,
+          ...(envAllowedOrigins !== undefined ? { allowedOrigins: envAllowedOrigins } : {}),
+          ...(envFallback !== undefined
+            ? { dangerouslyAllowHostHeaderOriginFallback: envFallback === "true" }
+            : {}),
+        },
+      },
+    };
   }
-  return mergeOverrides(cfg, overrides) as OpenClawConfig;
+
+  if (!overrides || Object.keys(overrides).length === 0) {
+    return nextCfg;
+  }
+  return mergeOverrides(nextCfg, overrides) as OpenClawConfig;
 }

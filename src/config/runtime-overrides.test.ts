@@ -76,4 +76,43 @@ describe("runtime overrides", () => {
       },
     });
   });
+
+  it("applies environment variable overrides for allowed origins", () => {
+    const prevAllowedOrigins = process.env.OPENCLAW_ALLOWED_ORIGINS;
+    try {
+      process.env.OPENCLAW_ALLOWED_ORIGINS = "https://example.com, https://another.com";
+      const cfg = {
+        gateway: { controlUi: { allowedOrigins: ["http://localhost:8080"] } },
+      } as OpenClawConfig;
+      const next = applyConfigOverrides(cfg);
+      expect(next.gateway?.controlUi?.allowedOrigins).toEqual([
+        "https://example.com",
+        "https://another.com",
+      ]);
+    } finally {
+      if (prevAllowedOrigins === undefined) {
+        delete process.env.OPENCLAW_ALLOWED_ORIGINS;
+      } else {
+        process.env.OPENCLAW_ALLOWED_ORIGINS = prevAllowedOrigins;
+      }
+    }
+  });
+
+  it("applies environment variable overrides for dangerous host fallback", () => {
+    const prevFallback = process.env.OPENCLAW_DANGEROUS_ALLOW_HOST_HEADER_ORIGIN_FALLBACK;
+    try {
+      process.env.OPENCLAW_DANGEROUS_ALLOW_HOST_HEADER_ORIGIN_FALLBACK = "true";
+      const cfg = {
+        gateway: { controlUi: { dangerouslyAllowHostHeaderOriginFallback: false } },
+      } as OpenClawConfig;
+      const next = applyConfigOverrides(cfg);
+      expect(next.gateway?.controlUi?.dangerouslyAllowHostHeaderOriginFallback).toBe(true);
+    } finally {
+      if (prevFallback === undefined) {
+        delete process.env.OPENCLAW_DANGEROUS_ALLOW_HOST_HEADER_ORIGIN_FALLBACK;
+      } else {
+        process.env.OPENCLAW_DANGEROUS_ALLOW_HOST_HEADER_ORIGIN_FALLBACK = prevFallback;
+      }
+    }
+  });
 });

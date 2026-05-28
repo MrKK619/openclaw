@@ -79,14 +79,43 @@ export function ensureControlUiAllowedOriginsForNonLoopbackBind(
   if (opts?.requireControlUiEnabled && config.gateway?.controlUi?.enabled === false) {
     return { config, seededOrigins: null, bind: effectiveBind };
   }
+  const envAllowedOrigins = process.env.OPENCLAW_ALLOWED_ORIGINS
+    ? process.env.OPENCLAW_ALLOWED_ORIGINS.split(",")
+        .map((value) => value.trim())
+        .filter(Boolean)
+    : undefined;
+
+  const envFallback = process.env.OPENCLAW_DANGEROUS_ALLOW_HOST_HEADER_ORIGIN_FALLBACK;
+
+  const allowedOrigins = envAllowedOrigins ?? config.gateway?.controlUi?.allowedOrigins;
+  const dangerouslyAllowHostHeaderOriginFallback =
+    envFallback !== undefined
+      ? envFallback === "true"
+      : config.gateway?.controlUi?.dangerouslyAllowHostHeaderOriginFallback;
+
   if (
     hasConfiguredControlUiAllowedOrigins({
-      allowedOrigins: config.gateway?.controlUi?.allowedOrigins,
-      dangerouslyAllowHostHeaderOriginFallback:
-        config.gateway?.controlUi?.dangerouslyAllowHostHeaderOriginFallback,
+      allowedOrigins,
+      dangerouslyAllowHostHeaderOriginFallback,
     })
   ) {
-    return { config, seededOrigins: null, bind: effectiveBind };
+    return {
+      config: {
+        ...config,
+        gateway: {
+          ...config.gateway,
+          controlUi: {
+            ...config.gateway?.controlUi,
+            ...(envAllowedOrigins !== undefined ? { allowedOrigins: envAllowedOrigins } : {}),
+            ...(envFallback !== undefined
+              ? { dangerouslyAllowHostHeaderOriginFallback: envFallback === "true" }
+              : {}),
+          },
+        },
+      },
+      seededOrigins: null,
+      bind: effectiveBind,
+    };
   }
 
   const port = resolveGatewayPortWithDefault(

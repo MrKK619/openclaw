@@ -49,6 +49,10 @@ services:
         generateValue: true # auto-generates a secure token
       - key: NODE_OPTIONS
         value: "--max-old-space-size=384"
+      - key: OPENCLAW_ALLOWED_ORIGINS
+        value: "" # set your public URL here (e.g. https://your-service.onrender.com)
+      - key: OPENCLAW_DANGEROUS_ALLOW_HOST_HEADER_ORIGIN_FALLBACK
+        value: "false"
     disk:
       name: openclaw-data
       mountPath: /data
@@ -86,6 +90,15 @@ Connect using the configured shared secret. This deploy template auto-generates
 `OPENCLAW_GATEWAY_TOKEN` (find it in **Dashboard → your service →
 Environment**); if you replace it with password auth, use that password
 instead.
+
+### Allowed Origins and Security
+
+When deploying on non-loopback network interfaces like Render, the gateway strictly rejects browser WebSocket connections from unauthorized origins to prevent hijacking.
+
+To authorize the Control UI to connect, set the allowed browser origins:
+
+1. **Allowed Origins**: Set the `OPENCLAW_ALLOWED_ORIGINS` environment variable in your service dashboard to your public domain (e.g. `https://your-service.onrender.com`). If you are running a local dashboard, you can also include local origins (e.g. `https://your-service.onrender.com,http://localhost:5173`).
+2. **Alternative (Host-Header Fallback)**: Alternatively, you can set `OPENCLAW_DANGEROUS_ALLOW_HOST_HEADER_ORIGIN_FALLBACK=true` to dynamically allow any origin matching the gateway's Host header. _Use with care, as this weakens DNS rebinding and hijacking protection._
 
 ## Render Dashboard features
 
